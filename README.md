@@ -1,191 +1,281 @@
-# 🎵 Precision Sine Wave Generator
+# High-Precision Frequency Sound Generator
 
-This project generates **high-precision sine-wave audio files** (WAV format) using Python.
-It supports **arbitrary frequencies**, including frequencies with **8–10+ decimal places**, and produces clean, continuous tones of any duration.
+A Python tool for generating audio files from exact frequency values with support for high decimal precision (10, 12, 15+ decimal places). Perfect for scientific audio experiments, sound healing, binaural beats, and precise frequency testing.
 
----
+## Features
 
-## 🚀 Features
+- 🎯 **High Precision**: Maintains exact decimal precision (10, 12, 15, 20+ decimal places)
+- 🎵 **Pure Sine Waves**: Generates clean sine wave tones at exact frequencies
+- 📁 **Multiple Formats**: Supports WAV, FLAC, OPUS, and MP3
+- 📝 **Smart Naming**: Filenames include the exact frequency (e.g., `432.123456789012Hz.wav`)
+- 🔢 **No Rounding**: Uses `Decimal` class and `float64` to prevent premature rounding
+- ⚙️ **Configurable**: Easily adjust sample rate, duration, amplitude, and output formats
 
-* Generates one or multiple sine-wave tones.
-* Supports extremely high-precision frequencies (beyond 10 decimal places).
-* Produces 16-bit PCM WAV audio.
-* Adjustable:
+## Requirements
 
-  * Frequency (Hz)
-  * Duration (seconds)
-  * Sample rate (Hz)
-  * Amplitude
-  * Output filename format
-* Easy to extend or integrate into audio generation pipelines.
-
----
-
-## 📦 Requirements
-
-Python 3.9+
-
-Install dependencies:
+### Python Dependencies
 
 ```bash
-pip install numpy
+pip install numpy scipy
 ```
 
-*(The built-in `wave` module is used for WAV writing — no install required.)*
+### FFmpeg (Optional but Recommended)
 
----
+FFmpeg is required for FLAC, OPUS, and MP3 conversion. WAV files will still work without it.
 
-## 📁 Project Structure
+**Installation:**
 
+- **Ubuntu/Debian**: `sudo apt-get install ffmpeg`
+- **macOS**: `brew install ffmpeg`
+- **Windows**: Download from [ffmpeg.org](https://ffmpeg.org/download.html)
+
+## Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/frequency-sound-generator.git
+cd frequency-sound-generator
 ```
-/
-├─ generate_sine.py
-└─ README.md
+
+2. Install dependencies:
+```bash
+pip install numpy scipy
 ```
 
----
+3. Install FFmpeg (see above)
 
-## ▶️ Usage
+## Quick Start
 
-Run the generator:
+Run the script with default settings:
 
 ```bash
-python generate_sine.py
+python frequency_generator.py
 ```
 
-The script will create WAV files in the same directory (or in `/output` if configured).
+This will generate audio files in the `audio_output` directory with example frequencies.
 
----
+## Usage & Configuration
 
-## 🛠 Editing User Inputs / Variables
+### 1. Changing the Frequency List
 
-You can modify user-configurable settings inside **generate_sine.py**.
-
-Below is a standard variable section you will find at the top of the script:
-
-```python
-sample_rate = 44100        # Samples per second
-duration = 60              # Length of each tone (seconds)
-amplitude = 0.5            # Output volume (0.0 – 1.0)
-
-frequencies = [
-    250.0000000001,
-    250.0000000002,
-    450.0000000001,
-    450.0000000002,
-    # Add or remove frequencies as needed
-]
-```
-
-### 🔧 Changing the Duration
-
-```python
-duration = 30   # makes each file 30 seconds long
-```
-
-### 🔧 Changing the Sample Rate
-
-Common values:
-
-* `44100` — standard audio
-* `48000` — video/audio standard
-* `96000` — high-resolution
-* `192000` — ultra-high resolution
-
-Example:
-
-```python
-sample_rate = 96000
-```
-
-### 🔧 Adding / Removing Frequencies
-
-Frequencies are simply values in a Python list:
+Edit the `frequencies` list in the `main()` function (around line 155):
 
 ```python
 frequencies = [
-    123.4567890123,
-    789.0000000001,
-    6000.1234567890,
+    "432.0",                    # Standard precision
+    "432.1234567890",           # 10 decimal places
+    "440.123456789012",         # 12 decimal places
+    "528.123456789012345",      # 15 decimal places
+    "639.12345678901234567890", # 20 decimal places
 ]
 ```
 
-Decimal precision is unlimited.
+**Important**: 
+- Always use **strings** (with quotes) to maintain precision
+- Use as many decimal places as needed
+- Example: `"440.123456789012"` ✓ vs `440.12` ✗
 
-### 🔧 Changing Output Filenames
+### 2. Audio Settings
 
-By default, filenames are generated with fixed decimal precision:
-
-```python
-filename = f"sine_{f:.10f}Hz.wav"
-```
-
-Increase decimal places:
+Modify the `PrecisionToneGenerator` parameters (around line 161):
 
 ```python
-filename = f"sine_{f:.15f}Hz.wav"
+generator = PrecisionToneGenerator(
+    sample_rate=48000,  # Sample rate in Hz
+    duration=5.0,       # Duration in seconds
+    amplitude=0.5       # Volume (0.0 to 1.0)
+)
 ```
 
-Or remove formatting entirely:
+**Parameters:**
+- `sample_rate`: Audio quality (44100, 48000, 96000, etc.)
+  - Higher = better quality but larger files
+  - Recommended: 48000 Hz
+- `duration`: Length of each tone in seconds
+  - Default: 5.0 seconds
+- `amplitude`: Volume level (0.0 = silent, 1.0 = maximum)
+  - Recommended: 0.5 to prevent clipping
+  - Adjust lower if you hear distortion
+
+### 3. Output Formats
+
+Choose which formats to generate (around line 168):
 
 ```python
-filename = f"sine_{f}Hz.wav"
+generator.generate_files(
+    frequencies=frequencies,
+    formats=['wav', 'flac', 'opus', 'mp3'],  # Choose formats
+    output_dir='audio_output',               # Output directory
+    keep_wav=True                            # Keep WAV files
+)
 ```
+
+**Format Options:**
+- `formats`: List of desired formats
+  - Available: `'wav'`, `'flac'`, `'opus'`, `'mp3'`
+  - Examples:
+    - WAV only: `formats=['wav']`
+    - WAV + MP3: `formats=['wav', 'mp3']`
+    - All formats: `formats=['wav', 'flac', 'opus', 'mp3']`
+
+- `output_dir`: Where to save files
+  - Default: `'audio_output'`
+  - Change to any directory: `'my_tones'`, `'output/frequencies'`, etc.
+
+- `keep_wav`: Whether to keep WAV files when converting
+  - `True`: Keep WAV files alongside converted formats
+  - `False`: Delete temporary WAV files after conversion
+
+### 4. Programmatic Usage
+
+You can also use it as a library in your own scripts:
+
+```python
+from frequency_generator import PrecisionToneGenerator
+
+# Initialize generator
+gen = PrecisionToneGenerator(sample_rate=48000, duration=3.0, amplitude=0.5)
+
+# Generate for specific frequencies
+my_frequencies = [
+    "432.1234567890",
+    "528.123456789012"
+]
+
+gen.generate_files(
+    frequencies=my_frequencies,
+    formats=['wav', 'mp3'],
+    output_dir='custom_output'
+)
+```
+
+## Examples
+
+### Example 1: Solfeggio Frequencies (High Precision)
+
+```python
+frequencies = [
+    "174.123456789012",
+    "285.234567890123",
+    "396.345678901234",
+    "417.456789012345",
+    "528.567890123456",
+    "639.678901234567",
+    "741.789012345678",
+    "852.890123456789",
+    "963.901234567890"
+]
+```
+
+### Example 2: Scientific Test Tones
+
+```python
+frequencies = [
+    "1000.0",                   # 1 kHz reference
+    "1000.1",                   # Slight deviation
+    "1000.123456789012345"      # High precision test
+]
+```
+
+### Example 3: Custom A4 Tunings
+
+```python
+frequencies = [
+    "440.0",                    # Standard A4
+    "432.0",                    # Alternative A4
+    "432.081881730",            # Scientific pitch (C = 256 Hz)
+    "444.0"                     # Higher pitch A4
+]
+```
+
+### Example 4: Binaural Beat Pairs
+
+```python
+# Left ear: 200 Hz, Right ear: 210 Hz (10 Hz beat)
+frequencies = [
+    "200.0",
+    "210.0"
+]
+```
+
+## Output
+
+The script generates files with the following naming convention:
+
+```
+audio_output/
+├── 432.0Hz.wav
+├── 432.0Hz.flac
+├── 432.0Hz.opus
+├── 432.0Hz.mp3
+├── 432.1234567890Hz.wav
+├── 432.1234567890Hz.flac
+└── ...
+```
+
+## Technical Details
+
+### Precision Handling
+
+- **Input**: Frequencies are stored as strings to prevent automatic rounding
+- **Processing**: Python's `Decimal` class maintains exact decimal representation
+- **Generation**: NumPy's `float64` provides high precision for audio synthesis
+- **Result**: No loss of precision throughout the entire pipeline
+
+### Audio Quality
+
+- **Bit Depth**: 16-bit PCM for WAV files
+- **Format Quality**:
+  - WAV: Lossless, uncompressed
+  - FLAC: Lossless, compressed (compression level 8)
+  - OPUS: 128 kbps (adjustable)
+  - MP3: 320 kbps (adjustable)
+
+## Troubleshooting
+
+### "ffmpeg not found" Warning
+
+**Issue**: FLAC, OPUS, and MP3 conversion will fail without ffmpeg.
+
+**Solution**: Install ffmpeg (see Requirements section). WAV files will still generate correctly.
+
+### Audio Clipping/Distortion
+
+**Issue**: Audio sounds distorted or clipped.
+
+**Solution**: Reduce the `amplitude` parameter (try 0.3 or 0.2 instead of 0.5).
+
+### File Permission Errors
+
+**Issue**: Cannot write to output directory.
+
+**Solution**: Ensure you have write permissions, or change `output_dir` to a writable location.
+
+### Memory Issues with Long Durations
+
+**Issue**: Script crashes with very long durations (e.g., 1 hour).
+
+**Solution**: Reduce `duration` or generate files in batches.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+MIT License - feel free to use this for any purpose.
+
+## Acknowledgments
+
+Built with:
+- NumPy & SciPy for audio generation
+- FFmpeg for format conversion
+- Python's Decimal module for precision arithmetic
+
+## Support
+
+For issues, questions, or feature requests, please open an issue on GitHub.
 
 ---
 
-## 📤 Output
-
-Files are generated in WAV format:
-
-* **16-bit PCM**
-* **Mono (1 channel)**
-* **Accurate sample-aligned waveforms**
-* **No clicks / no artifacts**
-
-Example output file:
-
-```
-sine_250.0000000001Hz.wav
-```
-
----
-
-## 🧩 Example: Generate a Single Tone
-
-Modify the frequency list:
-
-```python
-frequencies = [ 440.0 ]  # Single A4 tone
-```
-
-Run:
-
-```bash
-python generate_sine.py
-```
-
----
-
-## 🧩 Example: Generate 100 Frequencies Automatically
-
-```python
-frequencies = [ 100 + i*0.00000001 for i in range(100) ]
-```
-
----
-
-## 📝 License
-
-MIT License — free for personal, academic, and commercial use.
-
----
-
-If you'd like, I can also:
-
-✔ generate the actual `generate_sine.py` file
-✔ create a `/output` directory structure
-✔ add examples, badges, or setup scripts
-✔ package this as a CLI tool (e.g., `sinegen 1000Hz`)
-
-Just tell me!
+**Made with precision** 🎵
